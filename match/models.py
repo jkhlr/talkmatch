@@ -4,11 +4,12 @@ from django.utils import timezone
 
 class Group(models.Model):
     keyword = models.CharField(max_length=100)
+    caller_hint = models.CharField(max_length=100)
+    backup_number = models.CharField(max_length=100)
     match_time = models.DateTimeField()
     matched = models.BooleanField()
     goodbye_time = models.DateTimeField()
     goodbye_sent = models.BooleanField()
-
     registered_notification = models.TextField(
         default="Registered!"
     )

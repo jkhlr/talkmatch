@@ -65,22 +65,24 @@ def match(group):
     while len(rest) > 1:
         create_match(rest.pop(), rest.pop())
 
-    # TODO notify lonely person
+    if rest:
+        create_match(rest.pop())
 
     group.matched = True
     group.save()
 
 
-def create_match(participant1, participant2):
+def create_match(participant1, participant2=None):
     group = participant1.group
-    assert participant2.group == group
+    assert participant2 is None or participant2.group == group
 
     match = Match.objects.create(group=group)
 
     participant1.match = match
     participant1.save()
-    participant2.match = match
-    participant2.save()
+    if participant2:
+        participant2.match = match
+        participant2.save()
 
     notify_match(match)
     return match
@@ -93,20 +95,24 @@ def notify_match(match):
         participant1 = match.participants.first()
     participant2 = match.participants.exclude(id=participant1.id).first()
 
+    if participant2 is None:
+        participant2_phone_number = group.backup_number
+    else:
+        participant2_phone_number = participant2.phone_number
+
     message1 = group.match_notification_calling.format(
-        phone_number=participant2.phone_number
+        phone_number=participant2_phone_number
     )
     message2 = group.match_notification_called.format(
         phone_number=participant1.phone_number
     )
 
     SmsAdapter.send_message(participant1.phone_number, message1)
-    SmsAdapter.send_message(participant2.phone_number, message2)
+    SmsAdapter.send_message(participant2_phone_number, message2)
 
 
 def notify_goodbye(group):
     for participant in group.participants.all():
-        # TODO: what about lonely person?
         SmsAdapter.send_message(
             participant.phone_number,
             group.goodbye_notification
@@ -117,7 +123,7 @@ def notify_goodbye(group):
 
 # ---
 
-def check_execute_actions():
+def check_cronjob_actions():
     for group in Group.objects.filter(matched=False):
         if timezone.now() >= group.match_time:
             match(group)
