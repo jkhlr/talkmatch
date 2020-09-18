@@ -14,16 +14,18 @@ def create_participant(phone_number, message):
         if group.keyword in message
     ]
     if not groups:
-        logger.warning(f'Invalid message (group not found): {message}')
+        logger.warning(f'Invalid message (no unmatched group found): {message}')
         return
 
     group = groups[0]
-    can_call = group.caller_hint in message
+    if Participant.objects.exists(group=group, phone_number=phone_number):
+        logger.warning(f'Already registered in group {group}: {phone_number}')
+        return
 
     participant = Participant.objects.create(
+        group=group,
         phone_number=phone_number,
-        can_call=can_call,
-        group=groups
+        can_call=group.caller_hint in message,
     )
     logger.info(f'Participant {participant} created')
     notify_registered(participant)

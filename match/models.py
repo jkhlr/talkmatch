@@ -34,6 +34,9 @@ class Match(models.Model):
     def __str__(self):
         return '& '.join(self.participants.all())
 
+    class Meta:
+        verbose_name_plural = 'Matches'
+
 
 class Participant(models.Model):
     phone_number = models.CharField(max_length=100)

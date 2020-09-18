@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 import os
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
+from dotenv import load_dotenv
+load_dotenv()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -105,9 +109,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
+TIME_ZONE = os.getenv('TALKMATCH_TIME_ZONE', 'UTC')
 
 USE_I18N = True
 
@@ -141,7 +143,7 @@ LOGGING = {
     'loggers': {
         '': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': 'DEBUG',
         },
         'django.server': {
             'handlers': ['null'],
@@ -153,6 +155,13 @@ LOGGING = {
 
 # --- Application Settings --- #
 
-SMS_API_KEY = 'API_KEY'
-SMS_API_GLOBAL_KEYWORD = 'jkhlr'
-SMS_API_DEBUG = True
+SMS_API_DEBUG = os.getenv('TALKMATCH_SMS_API_DEBUG').lower() in ['1', 'true']
+
+SMS_API_KEY = os.getenv('TALKMATCH_SMS_API_KEY', '')
+if not SMS_API_KEY and not SMS_API_DEBUG:
+    raise ImproperlyConfigured('TALKMATCH_SMS_API_KEY not set')
+
+SMS_API_GLOBAL_KEYWORD = os.getenv('TALKMATCH_SMS_API_GLOBAL_KEYWORD', '')
+if not SMS_API_GLOBAL_KEYWORD and not SMS_API_DEBUG:
+    raise ImproperlyConfigured('TALKMATCH_SMS_API_GLOBAL_KEYWORD not set')
+
