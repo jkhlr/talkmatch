@@ -39,6 +39,9 @@ def notify_registered(participant):
 # ---
 
 def match(group):
+    if group.matched:
+        raise ValueError(f'Group {group} is already matched')
+
     participants = group.participants.all()
     participants_calling = set(
         participant for participant in participants
@@ -111,7 +114,10 @@ def notify_match(match):
     SmsAdapter.send_message(participant2_phone_number, message2)
 
 
-def notify_goodbye(group):
+def goodbye(group):
+    if group.goodbye_sent:
+        raise ValueError(f'Goodbye is already sent for Group {group}')
+
     for participant in group.participants.all():
         SmsAdapter.send_message(
             participant.phone_number,
@@ -125,8 +131,8 @@ def notify_goodbye(group):
 
 def check_cronjob_actions():
     for group in Group.objects.filter(matched=False):
-        if timezone.now() >= group.match_time:
+        if group.match_time and timezone.now() >= group.match_time:
             match(group)
     for group in Group.objects.filter(goodbye_sent=False):
-        if timezone.now() >= group.goodbye_time:
-            notify_goodbye(group)
+        if group.goodbye_time and timezone.now() >= group.goodbye_time:
+            goodbye(group)

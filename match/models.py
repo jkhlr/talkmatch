@@ -6,9 +6,9 @@ class Group(models.Model):
     keyword = models.CharField(max_length=100)
     caller_hint = models.CharField(max_length=100)
     backup_number = models.CharField(max_length=100)
-    match_time = models.DateTimeField()
+    match_time = models.DateTimeField(null=True, blank=True)
     matched = models.BooleanField()
-    goodbye_time = models.DateTimeField()
+    goodbye_time = models.DateTimeField(null=True, blank=True)
     goodbye_sent = models.BooleanField()
     registered_notification = models.TextField(
         default="Registered!"
@@ -23,10 +23,16 @@ class Group(models.Model):
         default="Thanks for participating!"
     )
 
+    def __str__(self):
+        return self.keyword
+
 
 class Match(models.Model):
     created = models.DateTimeField(default=timezone.now)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return '& '.join(self.participants.all())
 
 
 class Participant(models.Model):
@@ -47,3 +53,6 @@ class Participant(models.Model):
     @property
     def matched(self):
         return bool(self.match)
+
+    def __str__(self):
+        return self.phone_number

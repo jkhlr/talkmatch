@@ -35,7 +35,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'match.apps.MatchConfig',
+    'django_object_actions',
+    'match.apps.MatchConfig'
 ]
 
 MIDDLEWARE = [
@@ -124,7 +125,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '[{levelname} {asctime} {module}] {message}',
+            'format': '[{asctime} {levelname: <7} {module: <11}] {message}',
             'style': '{',
         },
     },
@@ -133,16 +134,25 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
         },
+        'null': {
+            'class': 'logging.NullHandler',
+        },
     },
-    'root': {
-        'handlers': ['console'],
-        'level': 'DEBUG',
-    },
+    'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'django.server': {
+            'handlers': ['null'],
+            'level': 'INFO',
+            'propagate': False
+        }
+    }
 }
 
 # --- Application Settings --- #
 
 SMS_API_KEY = 'API_KEY'
-SMS_API_URL = 'https://gateway.sms77.io/api/sms'
 SMS_API_GLOBAL_KEYWORD = 'jkhlr'
 SMS_API_DEBUG = True

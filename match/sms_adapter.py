@@ -10,6 +10,8 @@ logger = logging.getLogger(__name__)
 
 
 class SmsAdapter(View):
+    API_URL = 'https://gateway.sms77.io/api/sms'
+
     receive_callback = None
 
     @classmethod
@@ -50,10 +52,7 @@ class SmsAdapter(View):
             'to': phone_number,
             'text': message
         }
-        response = requests.get(
-            settings.SMS_API_URL,
-            params=parameters
-        )
+        response = requests.get(cls.API_URL, params=parameters)
         if response.status_code != 200:
             raise ValueError(
                 f'API error (HTTP {response.status_code}): {response.content}'
