@@ -1,32 +1,36 @@
-from django.conf import settings
+import logging
+
 from django.utils import timezone
 
 from match.models import Group, Participant, Match
-from match.sms_adapter import send_message
+from match.sms_adapter import SmsAdapter
+
+logger = logging.getLogger(__name__)
 
 
 def create_participant(phone_number, message):
-    messaged_cleaned = message[len(settings.GLOBAL_KEYWORD):].strip()
     groups = [
         group for group in Group.objects.filter(matched=False)
-        if group.keyword in messaged_cleaned
+        if group.keyword in message
     ]
     if not groups:
-        raise ValueError(f'Invalid message (group not found): {message}')
-    # TODO: put into settings
-    can_call = 'anrufer' in messaged_cleaned
+        logger.warning(f'Invalid message (group not found): {message}')
+        return
+
+    group = groups[0]
+    can_call = group.caller_hint in message
 
     participant = Participant.objects.create(
         phone_number=phone_number,
         can_call=can_call,
-        group=groups[0]
+        group=groups
     )
     notify_registered(participant)
     return participant
 
 
 def notify_registered(participant):
-    send_message(
+    SmsAdapter.send_message(
         participant.phone_number,
         participant.group.registered_notification
     )
@@ -96,14 +100,17 @@ def notify_match(match):
         phone_number=participant1.phone_number
     )
 
-    send_message(participant1.phone_number, message1)
-    send_message(participant2.phone_number, message2)
+    SmsAdapter.send_message(participant1.phone_number, message1)
+    SmsAdapter.send_message(participant2.phone_number, message2)
 
 
 def notify_goodbye(group):
     for participant in group.participants.all():
         # TODO: what about lonely person?
-        send_message(participant.phone_number, group.goodbye_notification)
+        SmsAdapter.send_message(
+            participant.phone_number,
+            group.goodbye_notification
+        )
     group.goodbye_sent = True
     group.save()
 

@@ -16,9 +16,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from match.sms_adapter import receive_message
+from match.sms_adapter import SmsAdapter
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('sms-callback/', receive_message)
+    path('sms-callback/', SmsAdapter.as_view())
 ]
