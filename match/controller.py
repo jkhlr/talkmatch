@@ -25,6 +25,7 @@ def create_participant(phone_number, message):
         can_call=can_call,
         group=groups
     )
+    logger.info(f'Participant {participant} created')
     notify_registered(participant)
     return participant
 
@@ -34,6 +35,7 @@ def notify_registered(participant):
         participant.phone_number,
         participant.group.registered_notification
     )
+    logger.info(f'Participant {participant} notified for registration')
 
 
 # ---
@@ -56,6 +58,7 @@ def match(group):
     while len(participants_calling):
         if not len(participants_not_calling):
             rest = participants_calling
+            logger.debug(f'More calling participants for group {group}')
             break
         create_match(
             participants_calling.pop(),
@@ -64,15 +67,18 @@ def match(group):
 
     if rest is None:
         rest = participants_not_calling
+        logger.debug(f'More non-calling participants for group {group}')
 
     while len(rest) > 1:
         create_match(rest.pop(), rest.pop())
 
     if rest:
+        logger.debug(f'One participant of group {group} has no partner')
         create_match(rest.pop())
 
     group.matched = True
     group.save()
+    logger.info(f'Group {group} matched')
 
 
 def create_match(participant1, participant2=None):
@@ -86,6 +92,7 @@ def create_match(participant1, participant2=None):
     if participant2:
         participant2.match = match
         participant2.save()
+    logger.info(f'Match {match} created')
 
     notify_match(match)
     return match
@@ -95,10 +102,12 @@ def notify_match(match):
     group = match.group
     participant1 = match.participants.filter(can_call=True).first()
     if participant1 is None:
+        logger.debug(f'Match {match} has two non-calling participants')
         participant1 = match.participants.first()
     participant2 = match.participants.exclude(id=participant1.id).first()
 
     if participant2 is None:
+        logger.debug(f'Participant {participant1} paired with backup number')
         participant2_phone_number = group.backup_number
     else:
         participant2_phone_number = participant2.phone_number
@@ -112,6 +121,7 @@ def notify_match(match):
 
     SmsAdapter.send_message(participant1.phone_number, message1)
     SmsAdapter.send_message(participant2_phone_number, message2)
+    logger.info(f'Match {match} notified')
 
 
 def goodbye(group):
@@ -125,14 +135,18 @@ def goodbye(group):
         )
     group.goodbye_sent = True
     group.save()
+    logger.info(f'Group {group} sent goodbye')
 
 
 # ---
 
-def check_cronjob_actions():
+def execute_cron_actions():
+    logger.info(f'Executing cron actions')
     for group in Group.objects.filter(matched=False):
         if group.match_time and timezone.now() >= group.match_time:
+            logger.info(f'Match time reached for group {group}')
             match(group)
     for group in Group.objects.filter(goodbye_sent=False):
         if group.goodbye_time and timezone.now() >= group.goodbye_time:
+            logger.info(f'Goodbye time reached for group {group}')
             goodbye(group)
