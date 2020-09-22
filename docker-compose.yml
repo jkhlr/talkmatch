@@ -8,4 +8,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./db.sqlite3:/var/app/db.sqlite3
+      - db:/var/app/db.sqlite3
+
+volumes:
+  db:
