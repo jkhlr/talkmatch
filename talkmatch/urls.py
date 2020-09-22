@@ -21,6 +21,6 @@ from match.sms_adapter import SmsAdapter
 
 urlpatterns = [
     path('sms-webhook/', SmsAdapter.as_view()),
-    path('', RedirectView.as_view(url=reverse_lazy('admin:index')))
+    path('', RedirectView.as_view(url=reverse_lazy('admin:index'))),
     path('admin/', admin.site.urls),
 ]
