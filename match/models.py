@@ -32,7 +32,11 @@ class Match(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
     def __str__(self):
-        return '& '.join(self.participants.all())
+        return '& '.join(
+            str(participant)
+            for participant
+            in self.participants.all()
+        )
 
     class Meta:
         verbose_name_plural = 'Matches'
