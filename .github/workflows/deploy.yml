@@ -1,0 +1,21 @@
+name: Deploy
+on: [push]
+jobs:
+  build:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: deploy to talkmatch.jakobkoehler.de
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script_stop: true
+          script: |
+            cd ~/talkmatch
+            git pull
+            docker-compose build
+            docker-compose stop
+            docker-compose run --rm app sh -c 'python manage.py migrate'
+            docker-compose up -d
