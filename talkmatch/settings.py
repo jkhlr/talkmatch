@@ -14,6 +14,7 @@ from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
+
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -24,9 +25,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '70ls@gi^ar)=s%_0*@tlv(au2h_r7e-6il)tcvymg9!btbl1yh'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -45,6 +43,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -109,8 +108,6 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
-TIME_ZONE = os.getenv('TALKMATCH_TIME_ZONE', 'UTC')
-
 USE_I18N = True
 
 USE_L10N = True
@@ -121,6 +118,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# --- Customized Settings --- #
 
 LOGGING = {
     'version': 1,
@@ -153,15 +152,24 @@ LOGGING = {
     }
 }
 
+STATIC_ROOT = os.getenv('DJANGO_STATIC_ROOT')
+TIME_ZONE = os.getenv('DJANGO_TIME_ZONE', 'UTC')
+
+DEBUG = os.getenv('DJANGO_DEBUG', '').lower() in ['1', 'true']
+COLLECTSTATIC = os.getenv('DJANGO_COLLECTSTATIC', '').lower() in ['1', 'true']
+
+if not DEBUG:
+    STATICFILES_STORAGE = \
+        'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 # --- Application Settings --- #
 
-SMS_API_DEBUG = os.getenv('TALKMATCH_SMS_API_DEBUG').lower() in ['1', 'true']
+SMS_API_DEBUG = os.getenv('TALKMATCH_SMS_API_DEBUG', DEBUG)
 
 SMS_API_KEY = os.getenv('TALKMATCH_SMS_API_KEY', '')
-if not SMS_API_KEY and not SMS_API_DEBUG:
+if not COLLECTSTATIC and not SMS_API_DEBUG and not SMS_API_KEY:
     raise ImproperlyConfigured('TALKMATCH_SMS_API_KEY not set')
 
 SMS_API_GLOBAL_KEYWORD = os.getenv('TALKMATCH_SMS_API_GLOBAL_KEYWORD', '')
-if not SMS_API_GLOBAL_KEYWORD and not SMS_API_DEBUG:
+if not COLLECTSTATIC and not SMS_API_DEBUG and not SMS_API_GLOBAL_KEYWORD:
     raise ImproperlyConfigured('TALKMATCH_SMS_API_GLOBAL_KEYWORD not set')
-

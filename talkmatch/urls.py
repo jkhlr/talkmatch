@@ -20,5 +20,5 @@ from match.sms_adapter import SmsAdapter
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('sms-callback/', SmsAdapter.as_view())
+    path('sms-webhook/', SmsAdapter.as_view())
 ]

@@ -18,7 +18,10 @@ def create_participant(phone_number, message):
         return
 
     group = groups[0]
-    if Participant.objects.exists(group=group, phone_number=phone_number):
+    if Participant.objects.filter(
+            group=group,
+            phone_number=phone_number
+    ).exists():
         logger.warning(f'Already registered in group {group}: {phone_number}')
         return
 

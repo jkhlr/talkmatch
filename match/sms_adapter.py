@@ -43,8 +43,8 @@ class SmsAdapter(View):
     def send_message(cls, phone_number, message):
         logger.info(f'Sending SMS to {phone_number}: {message}')
 
-        if settings.SMS_API_DEBUG:
-            logger.warning('SMS_API_DEBUG == True: no SMS was sent.')
+        if settings.DEBUG:
+            logger.warning('DEBUG == True: no SMS was sent.')
             return
 
         parameters = {
