@@ -169,7 +169,3 @@ SMS_API_DEBUG = os.getenv('TALKMATCH_SMS_API_DEBUG', DEBUG)
 SMS_API_KEY = os.getenv('TALKMATCH_SMS_API_KEY', '')
 if not COLLECTSTATIC and not SMS_API_DEBUG and not SMS_API_KEY:
     raise ImproperlyConfigured('TALKMATCH_SMS_API_KEY not set')
-
-SMS_API_GLOBAL_KEYWORD = os.getenv('TALKMATCH_SMS_API_GLOBAL_KEYWORD', '')
-if not COLLECTSTATIC and not SMS_API_DEBUG and not SMS_API_GLOBAL_KEYWORD:
-    raise ImproperlyConfigured('TALKMATCH_SMS_API_GLOBAL_KEYWORD not set')

@@ -22,12 +22,6 @@ class SmsAdapter(View):
     @classmethod
     def on_receive(cls, phone_number, message):
         logger.info(f'SMS from {phone_number}: "{message}"')
-        global_keyword = settings.SMS_API_GLOBAL_KEYWORD
-        if not message.startswith(global_keyword):
-            raise ValueError(
-                f'Message with invalid global keyword received: {message}'
-            )
-        message_cleaned = message[len(global_keyword):].strip()
 
         if cls.receive_callback is None:
             logger.debug(f'No callback registered')
@@ -35,9 +29,9 @@ class SmsAdapter(View):
 
         logger.debug(
             f'Executing callback: {cls.receive_callback} with arguments '
-            f'phone_number={phone_number}, message={message_cleaned}'
+            f'phone_number={phone_number}, message={message}'
         )
-        cls.receive_callback(phone_number, message_cleaned)
+        cls.receive_callback(phone_number, message)
 
     @classmethod
     def send_message(cls, phone_number, message):
