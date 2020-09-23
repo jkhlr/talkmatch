@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 def create_participant(phone_number, message):
     groups = [
         group for group in Group.objects.filter(matched=False)
-        if group.keyword in message
+        if group.keyword.lower() in message.lower()
     ]
     if not groups:
         logger.warning(f'Invalid message (no unmatched group found): {message}')
@@ -28,7 +28,7 @@ def create_participant(phone_number, message):
     participant = Participant.objects.create(
         group=group,
         phone_number=phone_number,
-        can_call=group.caller_hint in message,
+        can_call=group.caller_hint.lower() in message.lower(),
     )
     logger.info(f'Participant {participant} created')
     notify_registered(participant)
