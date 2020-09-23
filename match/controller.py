@@ -1,4 +1,5 @@
 import logging
+from random import random
 
 from django.utils import timezone
 
@@ -49,7 +50,9 @@ def match(group):
     if group.matched:
         raise ValueError(f'Group {group} is already matched')
 
-    participants = group.participants.all()
+    participants = list(group.participants.all())
+    random.shuffle(participants)
+
     participants_calling = set(
         participant for participant in participants
         if participant.can_call
