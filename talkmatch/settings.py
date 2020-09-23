@@ -164,7 +164,12 @@ if not DEBUG:
 
 # --- Application Settings --- #
 
-SMS_API_DEBUG = os.getenv('TALKMATCH_SMS_API_DEBUG', DEBUG)
+SMS_API_DEBUG = os.getenv('TALKMATCH_SMS_API_DEBUG')
+if SMS_API_DEBUG is None:
+    SMS_API_DEBUG = DEBUG
+else:
+    SMS_API_DEBUG = SMS_API_DEBUG.lower() in ['1', 'true']
+
 
 SMS_API_KEY = os.getenv('TALKMATCH_SMS_API_KEY', '')
 if not COLLECTSTATIC and not SMS_API_DEBUG and not SMS_API_KEY:
