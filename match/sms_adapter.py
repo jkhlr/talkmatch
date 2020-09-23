@@ -27,6 +27,9 @@ class SmsAdapter(View):
             logger.debug(f'No callback registered')
             return
 
+        if not (phone_number.startswith('+') or phone_number.startswith('00')):
+            phone_number = f'+{phone_number}'
+
         logger.debug(
             f'Executing callback: {cls.receive_callback} with arguments '
             f'phone_number={phone_number}, message={message}'
