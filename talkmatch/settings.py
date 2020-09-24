@@ -12,8 +12,10 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 import os
 from pathlib import Path
 
+import sentry_sdk
 from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
+from sentry_sdk.integrations.django import DjangoIntegration
 
 load_dotenv()
 
@@ -161,6 +163,15 @@ COLLECTSTATIC = os.getenv('DJANGO_COLLECTSTATIC', '').lower() in ['1', 'true']
 if not DEBUG:
     STATICFILES_STORAGE = \
         'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+SENTRY_DSN = os.getenv('SENTRY_DSN')
+if not COLLECTSTATIC and not DEBUG and SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration()],
+        traces_sample_rate=1.0,
+        send_default_pii=True
+    )
 
 # --- Application Settings --- #
 
