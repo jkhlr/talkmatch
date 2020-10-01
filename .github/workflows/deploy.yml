@@ -18,7 +18,4 @@ jobs:
           script: |
             cd ~/talkmatch
             git pull
-            docker-compose build
-            docker-compose stop
-            docker-compose run --rm app sh -c 'python manage.py migrate'
-            docker-compose up -d
+            docker-compose up -d --build
