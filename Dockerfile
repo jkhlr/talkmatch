@@ -1,4 +1,6 @@
-FROM python:3.8-alpine
+FROM python:3.8-alpine as app
+
+RUN apk add --no-cache tini
 
 ENV BASE_DIR=/var/app
 WORKDIR $BASE_DIR
@@ -8,6 +10,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY manage.py manage.py
 COPY talkmatch talkmatch
 COPY match match
+
+ENTRYPOINT ["/sbin/tini", "--"]
+
+
+FROM app as web
 
 ENV DJANGO_STATIC_ROOT=$BASE_DIR/static
 RUN mkdir $DJANGO_STATIC_ROOT
@@ -20,4 +27,10 @@ CMD gunicorn talkmatch.wsgi \
     --workers 3 \
     --log-level=debug \
     --access-logfile - \
-    --error-logfile - \
+    --error-logfile -
+
+FROM app as cron
+
+ENV CRON_COMMAND="$BASE_DIR/manage.py execute_cron_actions"
+RUN echo "* * * * * $CRON_COMMAND" > /etc/crontabs/root
+CMD crond -f
